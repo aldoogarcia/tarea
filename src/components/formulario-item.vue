@@ -1,33 +1,76 @@
 <script setup>
 import { reactive } from 'vue';
-import headerItem from '../components/header-item.vue';
+import alertaItem from './alerta-item.vue';
 
 
-
-    const form = reactive({
-        nombre: '',
-        fecha: '',
-        descripcion: '',
-        // categoria:'',
-        // prioridad:false
+    const alerta= reactive({
+        tipo:'',
+        mensaje:''
     })
 
+    
+    const emit = defineEmits(['update:nombre', 'update:fecha','update:descripcion','update:categoria','update:prioridad','update:id','validar-form'])
+
+    const props = defineProps({
+        id:{
+            type: String,
+        },
+        nombre:{
+            type:String,
+            required: true
+        },
+        fecha:{
+            type:String,
+            required: true
+        },
+        descripcion:{
+            type:String,
+            required: true
+        },
+        categoria:{
+            type:String,
+            required: true
+        },
+        prioridad:{
+            type:Boolean,
+            
+            
+        }
+    })
+
+
+
+
+
     const validarFormulario=()=>{
-        const formComplete= Object.values(form).includes('');
+        const formComplete= Object.values(props).includes('');
         if(formComplete){
-            alert('Todos los campos son obligatorios')
+            alerta.tipo='error'
+            alerta.mensaje='Todos los campos son obligatorios'
+           return
             
         }else{
-            alert('Se Guardo.....')
+            alerta.tipo='exito'
+            alerta.mensaje='Tarea Guardada'
+            emit('validar-form')
         }
+
+        setTimeout(()=>{
+            alerta.tipo=''
+            alerta.mensaje=''
+        }, 5000)
+
     }
 </script>
 <template>
-    <headerItem/>
+    
     <div class="md:w-1/2 mt-10 px-7" >
 
         <p class="text-xl text-center">Agrega Nueva <span class="text-green-600">Tarea</span></p>
-
+        <alertaItem
+        v-if="alerta.tipo"
+        :alerta="alerta"
+        />
         <form 
         @submit.prevent="validarFormulario"
         class="px-10 py-10 shadow-lg shadow-black-100">
@@ -37,7 +80,8 @@ import headerItem from '../components/header-item.vue';
                 id="nombre"
                 type="text"
                 placeholder="Ingresa el nombre de la tarea"
-                v-model="form.nombre"
+                :value="nombre"
+                @input="$emit('update:nombre',$event.target.value)"
                 >
             </div>
 
@@ -47,7 +91,8 @@ import headerItem from '../components/header-item.vue';
                 type="datetime-local" 
                 id="fecha"
                 class="w-full mt-1 border-2 border-b-sky-300  rounded-lg text-center"
-                v-model="form.fecha"
+                @input="$emit('update:fecha',$event.target.value)"
+                :value="fecha"
                 >
             </div>
 
@@ -56,8 +101,9 @@ import headerItem from '../components/header-item.vue';
                 <textarea
                 class="w-full mt-1 border-2 border-b-sky-300  rounded-lg"
                 id="descripcion"
+                :value="descripcion"
                 placeholder="Descripcion de la tarea"
-                v-model="form.descripcion"
+                @input="$emit('update:descripcion',$event.target.value)"
                 >
 
                 </textarea>
@@ -65,25 +111,29 @@ import headerItem from '../components/header-item.vue';
             <div>
                 <label class="uppercase block mt-3" for="categoria">Categoria</label>
                 <select
+                :value="categoria"
+                @input="$emit('update:categoria',$event.target.value)"
                 class="w-full mt-1 border-2 border-b-sky-300  rounded-lg text-center"
                 id="categoria">
                     <option value="">-- Selecciona --</option>
                     <option value="Escuela">Escuela</option>
-                    <option value="Escuela">Familia</option>
-                    <option value="Escuela">Novia</option>
+                    <option value="Familia">Familia</option>
+                    <option value="Novia">Novia</option>
                 </select>
             </div>
 
             <div class="mt-3">
                 <label class="uppercase " for="prioridad">Prioridad</label>
-              <input type="checkbox" id="prioridad" class="mx-3">
+              <input
+              :value="prioridad"
+              @input="$emit('update:prioridad',$event.target.checked)" type="checkbox" id="prioridad" class="mx-3">
             </div>
                 
             </div>
             
             <input 
             type="submit" 
-            value="Guardar" 
+            :value="[props.id==null ? 'Guardar Datos' : 'Actualizar Datos']" 
             class="bg-blue-500 hover:bg-blue-700 cursor-pointer transition-colors w-full mt-3 rounded-lg text-white"
             >
 
